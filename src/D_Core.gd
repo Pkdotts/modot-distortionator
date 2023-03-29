@@ -111,21 +111,21 @@ func _on_btn_run_pressed():
 
 var settings := {
 	"default_shader": "res://assets/default_shader.tres",
-	"default_shader_export": "/assets/default_shader.tres",
+	"default_shader_export": "[DEFAULT]",
 	"default_texture": "res://test/bbg_citrus.png",
-	"default_texture_export": "/icon.png",
+	"default_texture_export": "[DEFAULT]",
 }
 
 onready var default_shader = load_default_shader()
 onready var default_texture = load_default_texture()
 
-func get_real_path(path : String):
+func get_abs_path(path : String):
 	return (project_path + "/" + path).simplify_path()
 
 func get_res_path(path : String):
 	return ("res://" + path).simplify_path()
 
-func make_real_path_res(path : String):
+func make_abs_path_res(path : String):
 	path = path.simplify_path()
 	project_path = project_path.simplify_path()
 	if project_path.is_subsequence_of(path):
@@ -146,6 +146,9 @@ func get_godot_project_path(path : String):
 		if not err == OK:
 			break
 	return null
+
+func is_inside_godot_project(path : String):
+	return project_path.simplify_path().is_subsequence_of(path.simplify_path())
 
 #-- PROJECT --#
 
@@ -202,6 +205,7 @@ func load_project(path : String):
 		return
 	
 	var godot_project_path = get_godot_project_path(path)
+	sampler_file_dialog.current_path = godot_project_path
 	
 	if godot_project_path == null:
 		OS.alert("File must be inside of a Godot project.", "Couldn't find project.godot")
@@ -212,6 +216,7 @@ func load_project(path : String):
 		OS.alert("Ngl, there should be a confirmation dialog here.", "Discarding Unsaved Changes.")
 	
 	project_path = godot_project_path
+	save_path = path
 	
 	shader_folder = file.get_value("", "shader_folder", "res://")
 	texture_folder = file.get_value("", "texture_folder", "res://")
@@ -229,19 +234,30 @@ func load_project(path : String):
 			OS.alert("Must have a path to a shader... discarding layer.")
 			break
 		
-		var shader_path = get_real_path(file.get_value(layer, "shader"))
-		var shader = load_shader(shader_path)
-		
-		if shader and "code" in shader:
-			OS.alert("Not a valid Shader resource.", "Discarding Layer.")
-			continue
+		var shader_entry = file.get_value(layer, "shader")
+		var shader
+		if shader_entry == "[DEFAULT]":
+			shader = load_default_shader()
+		else:
+			var shader_path = get_abs_path(shader_entry)
+			shader = load_shader(shader_path)
+			
+			if shader and "code" in shader:
+				OS.alert("Not a valid Shader resource.", "Discarding Layer.")
+				continue
 		
 		layer_view.set_shader(shader)
 		keys.erase("shader")
 		
 		if "texture" in keys:
-			var texture_path = get_real_path(file.get_value(layer, "texture"))
-			var texture = load_fileref(texture_path)
+			var texture_entry = file.get_value(layer, "texture")
+			var texture
+			
+			if texture_entry == "[DEFAULT]":
+				texture = load_default_texture()
+			else:
+				var texture_path = get_abs_path(texture_entry)
+				texture = load_fileref(texture_path)
 			
 			if not texture:
 				OS.alert("Not a valid texture path. TEXTURE will be unset.")
@@ -251,7 +267,13 @@ func load_project(path : String):
 			keys.erase("texture")
 		
 		for uniform_name in keys:
-			layer_view.set_uniform(uniform_name, file.get_value(layer, uniform_name, null))
+			var uniform_value = file.get_value(layer, uniform_name, null)
+			
+			if uniform_value is String:
+				if uniform_value.begins_with("[Resource]"):
+					uniform_value = load_fileref(get_abs_path(uniform_value.trim_prefix("[Resource]")))
+			
+			layer_view.set_uniform(uniform_name, uniform_value)
 	regenerate_uniform_editors()
 	
 	new_panel.visible = false
@@ -267,7 +289,7 @@ func export_project(path : String):
 	
 	for layer in layers_container.get_children():
 		var section_name = layer.name
-		var shader_path = make_real_path_res(layer.SHADER.abs_path)
+		var shader_path = make_abs_path_res(layer.SHADER.abs_path)
 		
 		if layer.SHADER.is_default:
 			shader_path = settings.default_shader_export
@@ -279,7 +301,7 @@ func export_project(path : String):
 		)
 		
 		if layer.TEXTURE:
-			var texture_path = make_real_path_res(layer.TEXTURE.abs_path)
+			var texture_path = make_abs_path_res(layer.TEXTURE.abs_path)
 			
 			if layer.TEXTURE.is_default:
 				texture_path = settings.default_texture_export
@@ -295,7 +317,14 @@ func export_project(path : String):
 			])
 		
 		for uniform in layer.uniform_list.values():
-			file.set_value(section_name, uniform.name, uniform.value)
+			var uniform_value = uniform.value
+			if uniform_value is FileRef:
+				file.set_value(
+					section_name, uniform.name,
+					"[Resource]%s" % make_abs_path_res(uniform_value.abs_path)
+				)
+			else:
+				file.set_value(section_name, uniform.name, uniform.value)
 	
 	update_window_title()
 	
@@ -372,12 +401,16 @@ func select_layer(index):
 func regenerate_uniform_editors():
 	clear_uniform_editors()
 	
+	if not selected_layer in range(layers_container.get_child_count()):
+		return
+	
 	var layer_view = layers_container.get_child(selected_layer)
 	
 	for i in layer_view.uniform_list.values():
 		var uniform_editor : UniformEditor = uniform_editor_scene.instance()
-		uniform_editor.setup(i)
+		uniform_editor.d_core = self
 		uniform_editor.sampler_file_dialog = sampler_file_dialog
+		uniform_editor.setup(i)
 		uniform_editors_container.add_child(uniform_editor, true)
 		uniform_editor.connect("uset", self, "set_layer_uniform")
 	

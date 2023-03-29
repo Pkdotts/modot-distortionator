@@ -5,9 +5,8 @@
 [ext_resource path="res://assets/icons/Play.png" type="Texture" id=3]
 [ext_resource path="res://assets/icons/Add.png" type="Texture" id=4]
 [ext_resource path="res://scenes/file_picker.tscn" type="PackedScene" id=5]
+[ext_resource path="res://distortionator_theme.tres" type="Theme" id=6]
 [ext_resource path="res://src/ViewportView.gd" type="Script" id=7]
-
-[sub_resource type="Theme" id=7]
 
 [sub_resource type="StyleBoxEmpty" id=1]
 
@@ -22,7 +21,7 @@ shortcut = SubResource( 5 )
 [node name="Control" type="VBoxContainer"]
 anchor_right = 1.0
 anchor_bottom = 1.0
-theme = SubResource( 7 )
+theme = ExtResource( 6 )
 script = ExtResource( 2 )
 
 [node name="p" type="PanelContainer" parent="."]
@@ -83,12 +82,12 @@ size_flags_vertical = 3
 [node name="PropertyEditPanel" type="VSplitContainer" parent="p/v/HSplit"]
 margin_right = 360.0
 margin_bottom = 403.0
-rect_min_size = Vector2( 360, 0 )
+rect_min_size = Vector2( 480, 0 )
 split_offset = -200
 
 [node name="dock_proj_layers" type="TabContainer" parent="p/v/HSplit/PropertyEditPanel"]
 margin_right = 360.0
-margin_bottom = 36.0
+margin_bottom = 43.0
 size_flags_vertical = 3
 tab_align = 0
 
@@ -96,7 +95,7 @@ tab_align = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
 margin_left = 4.0
-margin_top = 32.0
+margin_top = 39.0
 margin_right = -4.0
 margin_bottom = -4.0
 size_flags_vertical = 3
@@ -141,7 +140,7 @@ size_flags_vertical = 3
 items = [ "Default", null, false ]
 
 [node name="dock_properties" type="TabContainer" parent="p/v/HSplit/PropertyEditPanel"]
-margin_top = 48.0
+margin_top = 55.0
 margin_right = 360.0
 margin_bottom = 403.0
 size_flags_vertical = 3
@@ -151,7 +150,7 @@ tab_align = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
 margin_left = 4.0
-margin_top = 32.0
+margin_top = 39.0
 margin_right = -4.0
 margin_bottom = -4.0
 
@@ -287,7 +286,7 @@ tab_align = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
 margin_left = 4.0
-margin_top = 32.0
+margin_top = 39.0
 margin_right = -4.0
 margin_bottom = -4.0
 expand = true
@@ -313,20 +312,20 @@ rect_min_size = Vector2( 100, 0 )
 
 [node name="Label" type="Label" parent="new_panel/VBoxContainer"]
 margin_right = 190.0
-margin_bottom = 14.0
+margin_bottom = 19.0
 text = "Distortionator BETA"
 align = 1
 
 [node name="btn_new" type="LinkButton" parent="new_panel/VBoxContainer"]
-margin_top = 18.0
+margin_top = 23.0
 margin_right = 190.0
-margin_bottom = 32.0
+margin_bottom = 42.0
 text = "Create New Project"
 
 [node name="btn_open" type="LinkButton" parent="new_panel/VBoxContainer"]
-margin_top = 36.0
+margin_top = 46.0
 margin_right = 190.0
-margin_bottom = 50.0
+margin_bottom = 65.0
 focus_mode = 2
 text = "Open Existing Project"
 
@@ -354,7 +353,7 @@ current_path = "/home/pedrobraga/Distortionator 3.x/"
 [node name="ImageDialog" type="FileDialog" parent="."]
 margin_right = 315.0
 margin_bottom = 130.0
-window_title = "Open an Image"
+window_title = "Open a File"
 mode = 0
 access = 2
 current_dir = "/home/pedrobraga/Distortionator 3.x"

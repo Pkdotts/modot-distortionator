@@ -164,7 +164,7 @@ margin_left = 1248.0
 margin_right = 1276.0
 margin_bottom = 810.0
 
-[node name="Button" type="Button" parent="sampler2D/v"]
+[node name="btn_pick_new_file" type="Button" parent="sampler2D/v"]
 margin_right = 28.0
 margin_bottom = 22.0
 icon = ExtResource( 3 )
@@ -182,3 +182,4 @@ flat = true
 [connection signal="value_changed" from="vec4/y" to="." method="_on_y_value_changed"]
 [connection signal="value_changed" from="vec4/z" to="." method="_on_z_value_changed"]
 [connection signal="value_changed" from="vec4/w" to="." method="_on_w_value_changed"]
+[connection signal="pressed" from="sampler2D/v/btn_pick_new_file" to="." method="_on_btn_pick_new_file_pressed"]

@@ -1,6 +1,9 @@
 tool
 extends EditorSceneImporter
 
+var DEFAULT_SHADER = preload("default_shader.tres")
+var DEFAULT_TEXTURE = preload("background.png")
+
 func _get_extensions():
 	return ["dsp", "bbg"]
 
@@ -34,13 +37,21 @@ func _import_scene(path : String, flags : int, bake_fps : int):
 			push_error("Layer %s doesn't contain a shader." % layer_section)
 			continue
 		
-		keys.erase("shader")
+		var shader_entry = str(file.get_value(layer_section, "shader", "[DEFAULT]"))
+		var shader_path : String
+		var shader : Shader
 		
-		var shader_path : String = (
-			shader_path_prefix + "/" +
-			str(file.get_value(layer_section, "shader", "shader.res"))
-		).simplify_path()
-		var shader : Shader = load(shader_path)
+		print("Loading Shader ", shader_entry)
+		if shader_entry == "[DEFAULT]":
+			shader = DEFAULT_SHADER
+		else:
+			shader_path = (
+				shader_path_prefix + "/" +
+				shader_entry
+			).simplify_path()
+			shader = load(shader_path)
+		
+		keys.erase("shader")
 		
 		if not shader:
 			push_error("Error loading shader at %s." % shader_path)
@@ -50,7 +61,6 @@ func _import_scene(path : String, flags : int, bake_fps : int):
 		material.shader = shader
 		
 		var layer_node := TextureRect.new()
-		layer_node.texture = preload("res://addons/distortionator_integration/background.png")
 		layer_node.stretch_mode = TextureRect.STRETCH_SCALE
 		layer_node.material = material
 		layer_node.name = layer_section
@@ -58,12 +68,18 @@ func _import_scene(path : String, flags : int, bake_fps : int):
 		layer_node.owner = node
 		
 		if "texture" in keys:
-			keys.erase("texture")
-			var texture_path : String = (
-				shader_path_prefix + "/" +
-				str(file.get_value(layer_section, "texture", "res://icon.png"))
-			).simplify_path()
-			var new_texture : Texture = load(texture_path)
+			var texture_entry = str(file.get_value(layer_section, "texture", "res://icon.png"))
+			var texture_path : String
+			var new_texture : Texture
+			if texture_entry == "[DEFAULT]":
+				new_texture = DEFAULT_TEXTURE
+			else:
+				texture_path = (
+					shader_path_prefix + "/" +
+					texture_entry
+				).simplify_path()
+				keys.erase("texture")
+				new_texture = load(texture_path)
 			if new_texture:
 				layer_node.texture = new_texture
 			else:
@@ -81,9 +97,17 @@ func _import_scene(path : String, flags : int, bake_fps : int):
 		
 		# Set the values for the uniforms!
 		for key in keys:
+			var uniform_value = file.get_value(layer_section, key, null)
+			
+			if uniform_value is String:
+				if uniform_value.begins_with("[Resource]"):
+					uniform_value = load(
+						("res://" + uniform_value.trim_prefix("[Resource]")).simplify_path()
+					)
+			
 			material.set_shader_param(
 				key,
-				file.get_value(layer_section, key, null)
+				uniform_value
 			)
 	
 	return node
