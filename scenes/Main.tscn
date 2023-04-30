@@ -1,0 +1,102 @@
+[gd_scene load_steps=8 format=2]
+
+[ext_resource path="res://scenes/LayerView.tscn" type="PackedScene" id=1]
+[ext_resource path="res://src/D_Core.gd" type="Script" id=2]
+[ext_resource path="res://fonts/CascadiaCode.ttf" type="DynamicFontData" id=3]
+
+[sub_resource type="DynamicFont" id=2]
+font_data = ExtResource( 3 )
+
+[sub_resource type="Theme" id=3]
+default_font = SubResource( 2 )
+
+[sub_resource type="StyleBoxEmpty" id=1]
+
+[sub_resource type="StyleBoxEmpty" id=4]
+
+[node name="Control" type="VBoxContainer"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme = SubResource( 3 )
+script = ExtResource( 2 )
+
+[node name="Toolbar" type="HBoxContainer" parent="."]
+margin_right = 1024.0
+margin_bottom = 25.0
+
+[node name="btn_File" type="MenuButton" parent="Toolbar"]
+margin_right = 48.0
+margin_bottom = 25.0
+text = "File"
+items = [ "New", null, 0, false, false, 0, 0, null, "", false, "Open...", null, 0, false, false, 1, 0, null, "", false, "Save", null, 0, false, false, 2, 0, null, "", false, "Save As...", null, 0, false, false, 3, 0, null, "", false ]
+
+[node name="btn_Project" type="MenuButton" parent="Toolbar"]
+margin_left = 52.0
+margin_right = 127.0
+margin_bottom = 25.0
+focus_mode = 2
+text = "Project"
+items = [ "Import...", null, 0, false, false, 0, 0, null, "", false, "Export...", null, 0, false, false, 1, 0, null, "", false ]
+
+[node name="p" type="PanelContainer" parent="."]
+margin_top = 29.0
+margin_right = 1024.0
+margin_bottom = 600.0
+size_flags_vertical = 3
+custom_styles/panel = SubResource( 1 )
+
+[node name="LayerContainer" type="PanelContainer" parent="p"]
+margin_right = 1024.0
+margin_bottom = 571.0
+custom_styles/panel = SubResource( 4 )
+
+[node name="layer" parent="p/LayerContainer" instance=ExtResource( 1 )]
+margin_bottom = 571.0
+
+[node name="HSplit" type="HSplitContainer" parent="p"]
+margin_right = 1024.0
+margin_bottom = 571.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="p/HSplit"]
+margin_right = 200.0
+margin_bottom = 571.0
+rect_min_size = Vector2( 200, 0 )
+
+[node name="lbl_layers" type="Label" parent="p/HSplit/VBoxContainer"]
+margin_right = 200.0
+margin_bottom = 19.0
+text = "-- Layers --"
+
+[node name="layer_list" type="ItemList" parent="p/HSplit/VBoxContainer"]
+margin_top = 23.0
+margin_right = 200.0
+margin_bottom = 283.0
+size_flags_vertical = 3
+
+[node name="lbl_uniforms" type="Label" parent="p/HSplit/VBoxContainer"]
+margin_top = 287.0
+margin_right = 200.0
+margin_bottom = 306.0
+text = "-- Uniforms --"
+
+[node name="uniforms" type="HBoxContainer" parent="p/HSplit/VBoxContainer"]
+margin_top = 310.0
+margin_right = 200.0
+margin_bottom = 571.0
+size_flags_vertical = 3
+
+[node name="uniform_names" type="VBoxContainer" parent="p/HSplit/VBoxContainer/uniforms"]
+margin_right = 96.0
+margin_bottom = 261.0
+size_flags_horizontal = 3
+
+[node name="uniform_editors" type="VBoxContainer" parent="p/HSplit/VBoxContainer/uniforms"]
+margin_left = 100.0
+margin_right = 200.0
+margin_bottom = 261.0
+rect_min_size = Vector2( 100, 0 )
+
+[node name="VBoxContainer2" type="VBoxContainer" parent="p/HSplit"]
+margin_left = 212.0
+margin_right = 1024.0
+margin_bottom = 571.0

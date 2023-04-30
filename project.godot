@@ -1,0 +1,56 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=4
+
+_global_script_classes=[ {
+"base": "Node",
+"class": "Distortionator_Core",
+"language": "GDScript",
+"path": "res://src/D_Core.gd"
+}, {
+"base": "Resource",
+"class": "Distortionator_Layer",
+"language": "GDScript",
+"path": "res://src/D_Layer.gd"
+}, {
+"base": "Resource",
+"class": "Distortionator_Project",
+"language": "GDScript",
+"path": "res://src/D_Project.gd"
+}, {
+"base": "Resource",
+"class": "Distortionator_Shader",
+"language": "GDScript",
+"path": "res://src/D_Shader.gd"
+} ]
+_global_script_class_icons={
+"Distortionator_Core": "",
+"Distortionator_Layer": "",
+"Distortionator_Project": "",
+"Distortionator_Shader": ""
+}
+
+[application]
+
+config/name="Distortionator"
+config/description="A simple app to create battle backgrounds for Modot."
+run/main_scene="res://scenes/Main.tscn"
+config/icon="res://icon.png"
+
+[editor_plugins]
+
+enabled=PoolStringArray( "res://addons/distortionator_integration/plugin.cfg" )
+
+[physics]
+
+common/enable_pause_aware_picking=true
+
+[rendering]
+
+environment/default_environment="res://default_env.tres"

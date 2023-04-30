@@ -1,0 +1,14 @@
+[gd_resource type="Shader" format=2]
+
+[resource]
+code = "shader_type canvas_item;
+
+uniform float red;
+uniform float green;
+uniform float blue;
+uniform float speed;
+
+void fragment() {
+	vec4 base = texture(TEXTURE, fract(UV + TIME * speed));
+	COLOR = base * vec4(red, green, blue, 1.0);
+}"
