@@ -56,18 +56,25 @@ func btn_project_id_pressed(id : int):
 		1: # EXPORT...
 			pass
 
+var project_file_dialog_mode := "New Project"
+
 func _on_btn_project_new_pressed():
-	pass # Replace with function body.
+	project_file_dialog_mode = "New Project"
+	project_file_dialog.mode = FileDialog.MODE_SAVE_FILE
+	project_file_dialog.popup_centered(Vector2(500, 600))
 
 func _on_btn_project_open_pressed():
+	project_file_dialog_mode = "Open Project"
 	project_file_dialog.mode = FileDialog.MODE_OPEN_FILE
 	project_file_dialog.popup_centered(Vector2(500, 600))
 
 func _on_ProjectFileDialog_file_selected(path):
-	match project_file_dialog.mode:
-		FileDialog.MODE_OPEN_FILE:
+	match project_file_dialog_mode:
+		"New Project":
+			new_project(path)
+		"Open Project":
 			load_project(path)
-		FileDialog.MODE_SAVE_FILE:
+		"Save Project As":
 			save_path = path
 			export_project(save_path)
 
@@ -78,6 +85,7 @@ func _on_btn_project_save_pressed():
 		_on_btn_project_save_as_pressed()
 
 func _on_btn_project_save_as_pressed():
+	project_file_dialog_mode = "Save Project As"
 	project_file_dialog.mode = FileDialog.MODE_SAVE_FILE
 	project_file_dialog.popup_centered(Vector2(500, 600))
 
@@ -136,6 +144,36 @@ var unsaved : bool = false
 
 var opened_shaders := {}
 
+func new_project(path : String):
+	print("Creating new project at %s." % path)
+	var godot_project_path = get_godot_project_path(path)
+	
+	if not godot_project_path:
+		OS.alert("File must be inside of a Godot project.", "Couldn't find project.godot")
+		return
+	
+	close_project()
+	
+	project_path = godot_project_path
+	shader_folder = "res://"
+	texture_folder = "res://"
+	save_path = path
+	unsaved = false
+	
+	export_project(path)
+
+func close_project():
+	# Remove all the current layers.
+	for layer in layers_container.get_children():
+		layers_container.remove(layer)
+		layer.queue_free()
+	layers_list.clear()
+	clear_uniform_editors()
+	for shader_edit in shaders_container.get_children():
+		shaders_container.remove(shader_edit)
+		shader_edit.queue_free()
+	opened_shaders.clear()
+
 func load_project(path : String):
 	var file = ConfigFile.new()
 	var err = file.load(path)
@@ -144,11 +182,13 @@ func load_project(path : String):
 		OS.alert("Malformed file.")
 		return
 	
-	project_path = get_godot_project_path(path)
+	var godot_project_path = get_godot_project_path(path)
 	
-	if project_path == null:
+	if godot_project_path == null:
 		OS.alert("File must be inside of a Godot project.", "Couldn't find project.godot")
 		return
+	
+	project_path = godot_project_path
 	
 	shader_folder = file.get_value("", "shader_folder", "res://")
 	texture_folder = file.get_value("", "texture_folder", "res://")
@@ -156,10 +196,7 @@ func load_project(path : String):
 	# TODO: Handle unsaved changes.
 	OS.alert("Changes won't be recovered. Pedro should fix this.", "TODO")
 	
-	# Remove all the current layers.
-	for layer in layers_container.get_children():
-		layers_container.remove(layer)
-		layer.queue_free()
+	close_project()
 	
 	var sections : Array = file.get_sections()
 	sections.erase("")
@@ -260,9 +297,7 @@ func select_layer(index):
 	regenerate_uniform_editors()
 
 func regenerate_uniform_editors():
-	for i in uniform_editors_container.get_children():
-		uniform_editors_container.remove_child(i)
-		i.free()
+	clear_uniform_editors()
 	
 	var layer_view = layers_container.get_child(selected_layer)
 	
@@ -273,6 +308,11 @@ func regenerate_uniform_editors():
 		uniform_editor.connect("uset", self, "set_layer_uniform")
 	
 	parameter_dock.name = layers_container.get_child(selected_layer).name
+
+func clear_uniform_editors():
+	for i in uniform_editors_container.get_children():
+		uniform_editors_container.remove_child(i)
+		i.free()
 
 func set_layer_uniform(uniform : String, value):
 	var current_layer : Distortionator_LayerView = layers_container.get_child(selected_layer)
