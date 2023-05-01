@@ -1,102 +1,312 @@
-[gd_scene load_steps=8 format=2]
+[gd_scene load_steps=13 format=2]
 
-[ext_resource path="res://scenes/LayerView.tscn" type="PackedScene" id=1]
+[ext_resource path="res://assets/icons/Remove.png" type="Texture" id=1]
 [ext_resource path="res://src/D_Core.gd" type="Script" id=2]
-[ext_resource path="res://fonts/CascadiaCode.ttf" type="DynamicFontData" id=3]
-
-[sub_resource type="DynamicFont" id=2]
-font_data = ExtResource( 3 )
-
-[sub_resource type="Theme" id=3]
-default_font = SubResource( 2 )
+[ext_resource path="res://editor_theme.tres" type="Theme" id=3]
+[ext_resource path="res://assets/icons/Add.png" type="Texture" id=4]
+[ext_resource path="res://scenes/file_picker.tscn" type="PackedScene" id=5]
+[ext_resource path="res://assets/icons/Pause.png" type="Texture" id=6]
+[ext_resource path="res://src/ViewportView.gd" type="Script" id=7]
+[ext_resource path="res://assets/scroll.tres" type="Shader" id=8]
 
 [sub_resource type="StyleBoxEmpty" id=1]
 
 [sub_resource type="StyleBoxEmpty" id=4]
 
+[sub_resource type="InputEventAction" id=5]
+action = "ui_toggle_view"
+
+[sub_resource type="ShortCut" id=6]
+shortcut = SubResource( 5 )
+
 [node name="Control" type="VBoxContainer"]
 anchor_right = 1.0
 anchor_bottom = 1.0
-theme = SubResource( 3 )
+theme = ExtResource( 3 )
 script = ExtResource( 2 )
-
-[node name="Toolbar" type="HBoxContainer" parent="."]
-margin_right = 1024.0
-margin_bottom = 25.0
-
-[node name="btn_File" type="MenuButton" parent="Toolbar"]
-margin_right = 48.0
-margin_bottom = 25.0
-text = "File"
-items = [ "New", null, 0, false, false, 0, 0, null, "", false, "Open...", null, 0, false, false, 1, 0, null, "", false, "Save", null, 0, false, false, 2, 0, null, "", false, "Save As...", null, 0, false, false, 3, 0, null, "", false ]
-
-[node name="btn_Project" type="MenuButton" parent="Toolbar"]
-margin_left = 52.0
-margin_right = 127.0
-margin_bottom = 25.0
-focus_mode = 2
-text = "Project"
-items = [ "Import...", null, 0, false, false, 0, 0, null, "", false, "Export...", null, 0, false, false, 1, 0, null, "", false ]
+default_shader = ExtResource( 8 )
 
 [node name="p" type="PanelContainer" parent="."]
-margin_top = 29.0
-margin_right = 1024.0
-margin_bottom = 600.0
+margin_right = 1440.0
+margin_bottom = 810.0
 size_flags_vertical = 3
 custom_styles/panel = SubResource( 1 )
 
-[node name="LayerContainer" type="PanelContainer" parent="p"]
-margin_right = 1024.0
-margin_bottom = 571.0
+[node name="Viewport" type="Viewport" parent="p"]
+size = Vector2( 320, 180 )
+size_override_stretch = true
+transparent_bg = true
+disable_3d = true
+usage = 0
+render_direct_to_screen = true
+render_target_v_flip = true
+render_target_update_mode = 3
+gui_disable_input = true
+
+[node name="LayerContainer" type="PanelContainer" parent="p/Viewport"]
+margin_right = 1440.0
+margin_bottom = 810.0
 custom_styles/panel = SubResource( 4 )
 
-[node name="layer" parent="p/LayerContainer" instance=ExtResource( 1 )]
-margin_bottom = 571.0
+[node name="LayersView" type="TextureRect" parent="p"]
+margin_right = 1440.0
+margin_bottom = 810.0
+expand = true
+stretch_mode = 6
+script = ExtResource( 7 )
+viewport_path = NodePath("../Viewport")
 
-[node name="HSplit" type="HSplitContainer" parent="p"]
-margin_right = 1024.0
-margin_bottom = 571.0
+[node name="v" type="VBoxContainer" parent="p"]
+margin_right = 1440.0
+margin_bottom = 810.0
 
-[node name="VBoxContainer" type="VBoxContainer" parent="p/HSplit"]
-margin_right = 200.0
-margin_bottom = 571.0
-rect_min_size = Vector2( 200, 0 )
-
-[node name="lbl_layers" type="Label" parent="p/HSplit/VBoxContainer"]
-margin_right = 200.0
-margin_bottom = 19.0
-text = "-- Layers --"
-
-[node name="layer_list" type="ItemList" parent="p/HSplit/VBoxContainer"]
-margin_top = 23.0
-margin_right = 200.0
-margin_bottom = 283.0
+[node name="HSplit" type="HBoxContainer" parent="p/v"]
+margin_right = 1440.0
+margin_bottom = 810.0
 size_flags_vertical = 3
 
-[node name="lbl_uniforms" type="Label" parent="p/HSplit/VBoxContainer"]
-margin_top = 287.0
-margin_right = 200.0
-margin_bottom = 306.0
-text = "-- Uniforms --"
+[node name="PropertyEditPanel" type="VBoxContainer" parent="p/v/HSplit"]
+margin_right = 300.0
+margin_bottom = 810.0
+rect_min_size = Vector2( 300, 0 )
 
-[node name="uniforms" type="HBoxContainer" parent="p/HSplit/VBoxContainer"]
-margin_top = 310.0
-margin_right = 200.0
-margin_bottom = 571.0
+[node name="Toolbar" type="HBoxContainer" parent="p/v/HSplit/PropertyEditPanel"]
+margin_right = 300.0
+margin_bottom = 24.0
+
+[node name="btn_run" type="Button" parent="p/v/HSplit/PropertyEditPanel/Toolbar"]
+margin_right = 28.0
+margin_bottom = 24.0
+toggle_mode = true
+pressed = true
+shortcut = SubResource( 6 )
+icon = ExtResource( 6 )
+flat = true
+
+[node name="dock_proj_layers" type="TabContainer" parent="p/v/HSplit/PropertyEditPanel"]
+margin_top = 28.0
+margin_right = 300.0
+margin_bottom = 417.0
 size_flags_vertical = 3
 
-[node name="uniform_names" type="VBoxContainer" parent="p/HSplit/VBoxContainer/uniforms"]
-margin_right = 96.0
-margin_bottom = 261.0
+[node name="Layers" type="VBoxContainer" parent="p/v/HSplit/PropertyEditPanel/dock_proj_layers"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 5.0
+margin_top = 29.0
+margin_right = -5.0
+margin_bottom = -5.0
+size_flags_vertical = 3
+
+[node name="layer_list" type="ItemList" parent="p/v/HSplit/PropertyEditPanel/dock_proj_layers/Layers"]
+margin_right = 290.0
+margin_bottom = 327.0
+size_flags_vertical = 3
+
+[node name="HBoxContainer" type="HBoxContainer" parent="p/v/HSplit/PropertyEditPanel/dock_proj_layers/Layers"]
+margin_top = 331.0
+margin_right = 290.0
+margin_bottom = 355.0
+
+[node name="btn_add" type="Button" parent="p/v/HSplit/PropertyEditPanel/dock_proj_layers/Layers/HBoxContainer"]
+margin_right = 28.0
+margin_bottom = 24.0
+icon = ExtResource( 4 )
+flat = true
+
+[node name="btn_remove" type="Button" parent="p/v/HSplit/PropertyEditPanel/dock_proj_layers/Layers/HBoxContainer"]
+margin_left = 32.0
+margin_right = 60.0
+margin_bottom = 24.0
+icon = ExtResource( 1 )
+flat = true
+
+[node name="Shaders" type="VBoxContainer" parent="p/v/HSplit/PropertyEditPanel/dock_proj_layers"]
+visible = false
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 5.0
+margin_top = 29.0
+margin_right = -5.0
+margin_bottom = -5.0
+size_flags_vertical = 3
+
+[node name="shader_list" type="ItemList" parent="p/v/HSplit/PropertyEditPanel/dock_proj_layers/Shaders"]
+margin_top = 4.0
+margin_right = 190.0
+margin_bottom = 4.0
+size_flags_vertical = 3
+items = [ "Default", null, false ]
+
+[node name="dock_properties" type="TabContainer" parent="p/v/HSplit/PropertyEditPanel"]
+margin_top = 421.0
+margin_right = 300.0
+margin_bottom = 810.0
+size_flags_vertical = 3
+
+[node name="Project" type="VBoxContainer" parent="p/v/HSplit/PropertyEditPanel/dock_properties"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 5.0
+margin_top = 29.0
+margin_right = -5.0
+margin_bottom = -5.0
+
+[node name="lbl_res_path" type="Label" parent="p/v/HSplit/PropertyEditPanel/dock_properties/Project"]
+margin_right = 290.0
+margin_bottom = 22.0
+text = "\"res://\" path:"
+
+[node name="txt_res_path" parent="p/v/HSplit/PropertyEditPanel/dock_properties/Project" instance=ExtResource( 5 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_top = 26.0
+margin_right = 290.0
+margin_bottom = 50.0
+file_dialog_path = NodePath("../../../../../../../FileDialog")
+
+[node name="Control" type="Control" parent="p/v/HSplit/PropertyEditPanel/dock_properties/Project"]
+margin_top = 54.0
+margin_right = 290.0
+margin_bottom = 329.0
+size_flags_vertical = 3
+
+[node name="project_handle" type="HBoxContainer" parent="p/v/HSplit/PropertyEditPanel/dock_properties/Project"]
+margin_top = 333.0
+margin_right = 290.0
+margin_bottom = 355.0
+
+[node name="btn_project_new" type="Button" parent="p/v/HSplit/PropertyEditPanel/dock_properties/Project/project_handle"]
+margin_right = 40.0
+margin_bottom = 22.0
+text = "New"
+
+[node name="btn_project_open" type="Button" parent="p/v/HSplit/PropertyEditPanel/dock_properties/Project/project_handle"]
+margin_left = 44.0
+margin_right = 103.0
+margin_bottom = 22.0
+text = "Open..."
+
+[node name="btn_project_save" type="Button" parent="p/v/HSplit/PropertyEditPanel/dock_properties/Project/project_handle"]
+margin_left = 107.0
+margin_right = 148.0
+margin_bottom = 22.0
+text = "Save"
+
+[node name="btn_project_save_as" type="Button" parent="p/v/HSplit/PropertyEditPanel/dock_properties/Project/project_handle"]
+margin_left = 152.0
+margin_right = 225.0
+margin_bottom = 22.0
+text = "Save As..."
+
+[node name="Parameters" type="VBoxContainer" parent="p/v/HSplit/PropertyEditPanel/dock_properties"]
+visible = false
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 5.0
+margin_top = 29.0
+margin_right = -5.0
+margin_bottom = -5.0
+size_flags_vertical = 3
+
+[node name="layer_properties" type="VBoxContainer" parent="p/v/HSplit/PropertyEditPanel/dock_properties/Parameters"]
+margin_right = 290.0
+margin_bottom = 50.0
 size_flags_horizontal = 3
 
-[node name="uniform_editors" type="VBoxContainer" parent="p/HSplit/VBoxContainer/uniforms"]
-margin_left = 100.0
-margin_right = 200.0
-margin_bottom = 261.0
-rect_min_size = Vector2( 100, 0 )
+[node name="uniforms" type="ScrollContainer" parent="p/v/HSplit/PropertyEditPanel/dock_properties/Parameters"]
+margin_top = 54.0
+margin_right = 290.0
+margin_bottom = 355.0
+size_flags_vertical = 3
 
-[node name="VBoxContainer2" type="VBoxContainer" parent="p/HSplit"]
-margin_left = 212.0
+[node name="uniform_editors" type="VBoxContainer" parent="p/v/HSplit/PropertyEditPanel/dock_properties/Parameters/uniforms"]
+margin_right = 290.0
+margin_bottom = 301.0
+rect_min_size = Vector2( 100, 0 )
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Shader" type="VBoxContainer" parent="p/v/HSplit/PropertyEditPanel/dock_properties"]
+visible = false
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 5.0
+margin_top = 29.0
+margin_right = -5.0
+margin_bottom = -5.0
+size_flags_vertical = 3
+
+[node name="layer_properties" type="VBoxContainer" parent="p/v/HSplit/PropertyEditPanel/dock_properties/Shader"]
+margin_right = 290.0
+margin_bottom = 50.0
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="p/v/HSplit/PropertyEditPanel/dock_properties/Shader/layer_properties"]
+margin_right = 290.0
+margin_bottom = 22.0
+text = "Relative Path"
+
+[node name="shader_picker" parent="p/v/HSplit/PropertyEditPanel/dock_properties/Shader/layer_properties" instance=ExtResource( 5 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_top = 26.0
+margin_right = 290.0
+margin_bottom = 50.0
+file_dialog_path = NodePath("../../../../../../../../FileDialog")
+
+[node name="uniforms" type="ScrollContainer" parent="p/v/HSplit/PropertyEditPanel/dock_properties/Shader"]
+margin_top = 54.0
+margin_right = 290.0
+margin_bottom = 355.0
+size_flags_vertical = 3
+
+[node name="uniform_editors" type="VBoxContainer" parent="p/v/HSplit/PropertyEditPanel/dock_properties/Shader/uniforms"]
+margin_right = 290.0
+margin_bottom = 301.0
+rect_min_size = Vector2( 100, 0 )
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ShaderEditPanel" type="VBoxContainer" parent="p/v/HSplit"]
+visible = false
+margin_left = 204.0
+margin_right = 1440.0
+margin_bottom = 810.0
+size_flags_horizontal = 3
+
+[node name="TabContainer" type="TabContainer" parent="p/v/HSplit/ShaderEditPanel"]
+margin_right = 1236.0
+margin_bottom = 810.0
+size_flags_vertical = 3
+
+[node name="FileDialog" type="FileDialog" parent="."]
+margin_top = 460.0
 margin_right = 1024.0
-margin_bottom = 571.0
+margin_bottom = 600.0
+window_title = "Open a File"
+mode = 0
+access = 2
+current_dir = "/home/pedrobraga/Distortionator 3.x"
+current_path = "/home/pedrobraga/Distortionator 3.x/"
+
+[node name="ProjectFileDialog" type="FileDialog" parent="."]
+margin_top = 460.0
+margin_right = 1024.0
+margin_bottom = 600.0
+window_title = "Open a File"
+mode = 0
+access = 2
+filters = PoolStringArray( "*.dsp, *.bbg; Distortionator File" )
+current_dir = "/home/pedrobraga/Distortionator 3.x"
+current_path = "/home/pedrobraga/Distortionator 3.x/"
+
+[connection signal="pressed" from="p/v/HSplit/PropertyEditPanel/Toolbar/btn_run" to="." method="_on_btn_run_pressed"]
+[connection signal="item_selected" from="p/v/HSplit/PropertyEditPanel/dock_proj_layers/Layers/layer_list" to="." method="_on_layer_list_item_selected"]
+[connection signal="pressed" from="p/v/HSplit/PropertyEditPanel/dock_proj_layers/Layers/HBoxContainer/btn_add" to="." method="_on_btn_layer_add_pressed"]
+[connection signal="pressed" from="p/v/HSplit/PropertyEditPanel/dock_proj_layers/Layers/HBoxContainer/btn_remove" to="." method="_on_btn_layer_remove_pressed"]
+[connection signal="pressed" from="p/v/HSplit/PropertyEditPanel/dock_properties/Project/project_handle/btn_project_new" to="." method="_on_btn_project_new_pressed"]
+[connection signal="pressed" from="p/v/HSplit/PropertyEditPanel/dock_properties/Project/project_handle/btn_project_open" to="." method="_on_btn_project_open_pressed"]
+[connection signal="pressed" from="p/v/HSplit/PropertyEditPanel/dock_properties/Project/project_handle/btn_project_save" to="." method="_on_btn_project_save_pressed"]
+[connection signal="pressed" from="p/v/HSplit/PropertyEditPanel/dock_properties/Project/project_handle/btn_project_save_as" to="." method="_on_btn_project_save_as_pressed"]
+[connection signal="file_selected" from="ProjectFileDialog" to="." method="_on_ProjectFileDialog_file_selected"]

@@ -11,6 +11,10 @@ func _import_scene(path : String, flags : int, bake_fps : int):
 	var file := ConfigFile.new()
 	var node := PanelContainer.new()
 	node.name = "BBG"
+	node.anchor_top = 0
+	node.anchor_bottom = 1
+	node.anchor_left = 0
+	node.anchor_right = 1
 	
 	var err = file.load(path)
 	
