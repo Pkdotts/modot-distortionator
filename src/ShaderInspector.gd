@@ -32,7 +32,7 @@ static func parse_value(val_string : String, type : String):
 			return val_string.to_float()
 		"vec2":
 			var r_vec2 = RegEx.new()
-			r_vec2.compile("vec2\\s*\\(\\s*(?<x>.*)(\\s*,\\s*(?<y>.*)\\s*)?\\)")
+			r_vec2.compile("vec2\\s*\\((?<x>.*?)(?:\\s*,\\s*(?<y>.*?))\\)")
 			var r_match : RegExMatch = r_vec2.search(val_string)
 			
 			if "y" in r_match.names.keys():
@@ -40,7 +40,7 @@ static func parse_value(val_string : String, type : String):
 			return Vector2(r_match.get_string("x").to_float(), r_match.get_string("x").to_float())
 		"vec3":
 			var r_vec3 = RegEx.new()
-			r_vec3.compile("vec3\\s*\\(\\s*(?<x>.*)(\\s*,\\s*(?<y>.*)\\s*,\\s*(?<z>.*)\\s*)?\\)")
+			r_vec3.compile("vec3\\s*\\((?<x>.*?)(?:\\s*,\\s*(?<y>.*?)\\s*,\\s*(?<y>.*?))\\)")
 			var r_match : RegExMatch = r_vec3.search(val_string)
 			
 			if "y" in r_match.names.keys():
@@ -48,7 +48,7 @@ static func parse_value(val_string : String, type : String):
 			return Vector3(r_match.get_string("x").to_float(), r_match.get_string("x").to_float(), r_match.get_string("x").to_float())
 		"vec4":
 			var r_vec4 = RegEx.new()
-			r_vec4.compile("vec4\\s*\\(\\s*(?<x>.*)(\\s*,\\s*(?<y>.*)\\s*,\\s*(?<z>.*)\\s*,\\s*(?<w>.*)\\s*)?\\)")
+			r_vec4.compile("vec4\\s*\\((?<x>.*?)(?:\\s*,\\s*(?<y>.*?)\\s*,\\s*(?<y>.*?)\\s*,\\s*(?<y>.*?))\\)")
 			var r_match : RegExMatch = r_vec4.search(val_string)
 			
 			if "y" in r_match.names.keys():

@@ -6,7 +6,7 @@ code = "shader_type canvas_item;
 render_mode blend_mix;
 
 //these are variables
-uniform vec2 screen_size = vec2(240, 135);
+uniform vec2 screen_size = vec2(320, 180);
 uniform vec2 move = vec2(0,0);
 uniform vec2 ping_pong_speed = vec2(0,0);
 uniform vec2 oscillation_amplitude = vec2(0,0);

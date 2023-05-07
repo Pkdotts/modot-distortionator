@@ -5,7 +5,11 @@ class_name Distortionator_Core
 
 ## The containers
 
+onready var new_panel : Control = $"new_panel"
+onready var main_edit_panel : Control = $"p"
+
 onready var project_file_dialog : FileDialog = $"ProjectFileDialog"
+onready var sampler_file_dialog : FileDialog = $"ImageDialog"
 
 onready var shader_edit_panel : VBoxContainer = $"p/v/HSplit/ShaderEditPanel"
 onready var shaders_container : TabContainer = $"p/v/HSplit/ShaderEditPanel/TabContainer"
@@ -18,8 +22,6 @@ onready var parameter_dock : Control = $"p/v/HSplit/PropertyEditPanel/dock_prope
 onready var uniform_editors_container : Control = $"p/v/HSplit/PropertyEditPanel/dock_properties/Parameters/uniforms/uniform_editors"
 
 ## The resources
-
-export var default_shader : Shader
 
 const play_icon = preload("res://assets/icons/Play.png")
 const pause_icon = preload("res://assets/icons/Pause.png")
@@ -108,9 +110,14 @@ func _on_btn_run_pressed():
 #-- SETTINGS --#
 
 var settings := {
-	"default_shader": "assets/default_shader.tres",
-	"default_texture": "test/bbg_citrus.png"
+	"default_shader": "res://assets/default_shader.tres",
+	"default_shader_export": "/assets/default_shader.tres",
+	"default_texture": "res://test/bbg_citrus.png",
+	"default_texture_export": "/icon.png",
 }
+
+onready var default_shader = load_default_shader()
+onready var default_texture = load_default_texture()
 
 func get_real_path(path : String):
 	return (project_path + "/" + path).simplify_path()
@@ -120,15 +127,21 @@ func get_res_path(path : String):
 
 func make_real_path_res(path : String):
 	path = path.simplify_path()
+	project_path = project_path.simplify_path()
+	if project_path.is_subsequence_of(path):
+		path = path.replace(project_path, "")
+		path = path.simplify_path()
+		return path
+	return null
 
 func get_godot_project_path(path : String):
 	var dir := Directory.new()
 	var dir_path := path.get_base_dir()
+	dir.open(dir_path)
 	
 	while true:
-		dir.open(dir_path)
 		if dir.file_exists("project.godot"):
-			return dir_path
+			return dir.get_current_dir()
 		var err = dir.change_dir("../")
 		if not err == OK:
 			break
@@ -139,7 +152,7 @@ func get_godot_project_path(path : String):
 var shader_folder : String = "res://"
 var texture_folder : String = "res://"
 var save_path : String = "res://example_project.dsp"
-var project_path : String = "/home/"
+var project_path : String = "res://"
 var unsaved : bool = false
 
 var opened_shaders := {}
@@ -151,6 +164,9 @@ func new_project(path : String):
 	if not godot_project_path:
 		OS.alert("File must be inside of a Godot project.", "Couldn't find project.godot")
 		return
+	
+	new_panel.visible = false
+	main_edit_panel.visible = true
 	
 	close_project()
 	
@@ -165,12 +181,15 @@ func new_project(path : String):
 func close_project():
 	# Remove all the current layers.
 	for layer in layers_container.get_children():
-		layers_container.remove(layer)
+		layers_container.remove_child(layer)
 		layer.queue_free()
 	layers_list.clear()
 	clear_uniform_editors()
 	for shader_edit in shaders_container.get_children():
-		shaders_container.remove(shader_edit)
+		if shader_edit.name == "Preview":
+			continue
+		
+		shaders_container.remove_child(shader_edit)
 		shader_edit.queue_free()
 	opened_shaders.clear()
 
@@ -188,13 +207,14 @@ func load_project(path : String):
 		OS.alert("File must be inside of a Godot project.", "Couldn't find project.godot")
 		return
 	
+	# TODO: Handle unsaved changes confirmation dialog.
+	if unsaved:
+		OS.alert("Ngl, there should be a confirmation dialog here.", "Discarding Unsaved Changes.")
+	
 	project_path = godot_project_path
 	
 	shader_folder = file.get_value("", "shader_folder", "res://")
 	texture_folder = file.get_value("", "texture_folder", "res://")
-	
-	# TODO: Handle unsaved changes.
-	OS.alert("Changes won't be recovered. Pedro should fix this.", "TODO")
 	
 	close_project()
 	
@@ -204,22 +224,39 @@ func load_project(path : String):
 	for layer in sections:
 		var layer_view : Distortionator_LayerView = create_new_layer(false)
 		var keys : Array = file.get_section_keys(layer)
-		keys.erase("shader")
+		
+		if not "shader" in keys:
+			OS.alert("Must have a path to a shader... discarding layer.")
+			break
 		
 		var shader_path = get_real_path(file.get_value(layer, "shader"))
-		var shader = load(shader_path)
+		var shader = load_shader(shader_path)
 		
-		if not shader or not shader is Shader:
+		if shader and "code" in shader:
 			OS.alert("Not a valid Shader resource.", "Discarding Layer.")
 			continue
 		
-		open_shader(shader_path, shader)
-		
 		layer_view.set_shader(shader)
+		keys.erase("shader")
+		
+		if "texture" in keys:
+			var texture_path = get_real_path(file.get_value(layer, "texture"))
+			var texture = load_fileref(texture_path)
+			
+			if not texture:
+				OS.alert("Not a valid texture path. TEXTURE will be unset.")
+				continue
+			
+			layer_view.set_texture(texture)
+			keys.erase("texture")
 		
 		for uniform_name in keys:
 			layer_view.set_uniform(uniform_name, file.get_value(layer, uniform_name, null))
 	regenerate_uniform_editors()
+	
+	new_panel.visible = false
+	main_edit_panel.visible = true
+	update_window_title()
 
 
 func export_project(path : String):
@@ -230,16 +267,51 @@ func export_project(path : String):
 	
 	for layer in layers_container.get_children():
 		var section_name = layer.name
-		# TODO: update the shader path resolution
-		file.set_value(section_name, "shader", default_shader.resource_path.trim_prefix("res://"))
+		var shader_path = make_real_path_res(layer.SHADER.abs_path)
+		
+		if layer.SHADER.is_default:
+			shader_path = settings.default_shader_export
+		
+		file.set_value(
+			section_name,
+			"shader",
+			shader_path
+		)
+		
+		if layer.TEXTURE:
+			var texture_path = make_real_path_res(layer.TEXTURE.abs_path)
+			
+			if layer.TEXTURE.is_default:
+				texture_path = settings.default_texture_export
+			
+			file.set_value(
+				section_name,
+				"texture",
+				texture_path
+			)
+		else:
+			OS.alert("Layer %s has no texture. Saving anyways." % [
+				layer.name
+			])
+		
 		for uniform in layer.uniform_list.values():
 			file.set_value(section_name, uniform.name, uniform.value)
 	
+	update_window_title()
+	
 	file.save(path)
+
+func update_window_title():
+	OS.set_window_title(
+		"Distortionator - %s%s" % [
+			save_path,
+			" (Unsaved)" if unsaved else ""
+		]
+	)
 
 #-- BACKEND --#
 
-var is_playing_shader : bool = true
+var is_playing_shader : bool = false
 
 func set_playing_shader(playing : bool):
 	is_playing_shader = playing
@@ -253,9 +325,10 @@ func open_shader(shader_path : String, shader = null):
 		if not shader_path in opened_shaders.keys():
 			opened_shaders[shader_path] = shader
 			var shader_editor = shader_editor_scene.instance()
-			shader_editor.name = shader_path.get_file()
+			shader_editor.text = shader.code
 			shader_editor.readonly = true
 			shaders_container.add_child(shader_editor, true)
+			shaders_container.set_tab_title(shader_editor.get_index(), shader_path.get_file())
 		return
 	open_shader(shader_path, safe_load_resource(shader_path))
 
@@ -272,10 +345,10 @@ func create_new_layer(use_defaults = true):
 	
 	if use_defaults:
 		layer_view.set_shader(
-			load_shader(get_res_path(settings.default_shader))
+			default_shader
 		)
 		
-		layer_view.texture = safe_load_resource(get_res_path(settings.default_texture))
+		layer_view.set_texture(default_texture)
 	
 	layers_list.add_item(layer_view.name)
 	layers_list.select(layers_list.get_item_count() - 1)
@@ -304,6 +377,7 @@ func regenerate_uniform_editors():
 	for i in layer_view.uniform_list.values():
 		var uniform_editor : UniformEditor = uniform_editor_scene.instance()
 		uniform_editor.setup(i)
+		uniform_editor.sampler_file_dialog = sampler_file_dialog
 		uniform_editors_container.add_child(uniform_editor, true)
 		uniform_editor.connect("uset", self, "set_layer_uniform")
 	
@@ -320,4 +394,48 @@ func set_layer_uniform(uniform : String, value):
 	current_layer.set_uniform(uniform, value)
 
 func load_shader(shader_path : String):
-	return load(shader_path)
+	var shader = load(shader_path)
+	if shader:
+		open_shader(shader_path)
+		return FileRef.create(project_path, shader, shader_path)
+	return null
+
+func load_default_shader():
+	var shader_path = settings.default_shader
+	var shader = load(shader_path)
+	if shader:
+		open_shader(shader_path)
+		return FileRef.create(project_path, shader, shader_path, true)
+	return null
+
+func load_default_texture():
+	var file_path = settings.default_texture
+	var file = load(file_path)
+	
+	if file:
+		var f = FileRef.create(project_path, file, file_path, true)
+		return f
+	return null
+
+func load_fileref(file_path : String):
+	var file
+	
+	if file_path.ends_with(".png"):
+		file = load_png(file_path)
+	else:
+		file = load(file_path)
+	
+	if file:
+		return FileRef.create(project_path, file, file_path)
+	return null
+
+func load_png(file_path : String):
+	var f := File.new()
+	if f.open(file_path, File.READ) == OK:
+		var img := Image.new()
+		img.load_png_from_buffer(f.get_buffer(f.get_len()))
+		var img_tex := ImageTexture.new()
+		img_tex.create_from_image(img, 1)
+		
+		return img_tex
+	return null

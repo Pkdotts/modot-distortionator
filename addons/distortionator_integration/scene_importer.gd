@@ -25,7 +25,7 @@ func _import_scene(path : String, flags : int, bake_fps : int):
 	layer_sections.remove(0)
 	
 	var shader_path_prefix = file.get_value("", "shader_folder", "res://")
-	var texture = file.get_value("", "texture_folder", "res://")
+	var texture_path_prefix = file.get_value("", "texture_folder", "res://")
 	
 	for layer_section in layer_sections:
 		var keys : Array = file.get_section_keys(layer_section)
@@ -59,7 +59,10 @@ func _import_scene(path : String, flags : int, bake_fps : int):
 		
 		if "texture" in keys:
 			keys.erase("texture")
-			var texture_path : String = file.get_value(layer_section,"texture","res://")
+			var texture_path : String = (
+				shader_path_prefix + "/" +
+				str(file.get_value(layer_section, "texture", "res://icon.png"))
+			).simplify_path()
 			var new_texture : Texture = load(texture_path)
 			if new_texture:
 				layer_node.texture = new_texture

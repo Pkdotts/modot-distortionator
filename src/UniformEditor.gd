@@ -3,6 +3,7 @@ class_name UniformEditor
 
 var uniform
 var editor
+var sampler_file_dialog : FileDialog
 
 signal changed(new_value)
 signal uset(uniform_name, new_value)
@@ -21,21 +22,26 @@ func setup(uniform : Dictionary):
 	if not uniform.value:
 		uniform.value = get_default_value(uniform.type)
 	else:
-		match uniform.type:
-			"float", "int":
-				editor.value = uniform.value
-			"vec2":
-				editor.get_node("x").value = uniform.value.x
-				editor.get_node("y").value = uniform.value.y
-			"vec3":
-				editor.get_node("x").value = uniform.value.x
-				editor.get_node("y").value = uniform.value.y
-				editor.get_node("z").value = uniform.value.z
-			"vec4":
-				editor.get_node("x").value = uniform.value.x
-				editor.get_node("y").value = uniform.value.y
-				editor.get_node("z").value = uniform.value.z
-				editor.get_node("w").value = 0
+		set_editor_value(uniform.value)
+
+func set_editor_value(value):
+	match uniform.type:
+		"bool":
+			editor.pressed = value
+		"float", "int":
+			editor.value = value
+		"vec2":
+			editor.get_node("x").value = value.x
+			editor.get_node("y").value = value.y
+		"vec3":
+			editor.get_node("x").value = value.x
+			editor.get_node("y").value = value.y
+			editor.get_node("z").value = value.z
+		"vec4":
+			editor.get_node("x").value = value.x
+			editor.get_node("y").value = value.y
+			editor.get_node("z").value = value.z
+			editor.get_node("w").value = 0
 
 func set_value_no_signal(new_value, update_editor):
 	uniform.value = new_value
@@ -57,6 +63,8 @@ func set_field(field:String, new_value, update_editor = true):
 
 func get_default_value(type : String):
 	match type:
+		"bool":
+			return false
 		"float":
 			return 0.0
 		"int":
@@ -67,7 +75,14 @@ func get_default_value(type : String):
 			return Vector3()
 		"vec4":
 			return Vector3()
+		"sampler2D":
+			return null
 
+func _on_bool_toggled(button_pressed):
+	set_value(button_pressed)
+
+func _on_int_value_changed(value):
+	set_value(value)
 
 func _on_float_value_changed(value):
 	set_value(value)
