@@ -73,6 +73,8 @@ func _on_btn_project_open_pressed():
 	project_file_dialog.popup_centered(Vector2(500, 600))
 
 func _on_btn_project_close_pressed():
+	new_panel.visible = true
+	main_edit_panel.visible = false
 	close_project()
 
 func _on_ProjectFileDialog_file_selected(path):
