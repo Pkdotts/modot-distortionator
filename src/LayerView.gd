@@ -2,6 +2,7 @@ extends TextureRect
 class_name Distortionator_LayerView
 
 var TEXTURE = null setget set_texture
+var TEXTURE_STRETCH = TextureRect.STRETCH_TILE
 var SHADER = null
 var uniform_list := {}
 
@@ -18,7 +19,10 @@ func set_shader(shader):
 func set_texture(new_texture):
 	if new_texture is FileRef:
 		texture = new_texture.file
-	TEXTURE = new_texture
+		TEXTURE = new_texture
+	else:
+		texture = new_texture
+		print("Setting texture directly, without FileRef.")
 
 func set_uniform(uniform_name : String, value):
 	if not uniform_name in uniform_list.keys():

@@ -19,6 +19,7 @@ onready var layers_container : Control = $"p/Viewport/LayerContainer"
 onready var layers_list : ItemList = $"p/v/HSplit/PropertyEditPanel/dock_proj_layers/Layers/layer_list"
 
 onready var parameter_dock : Control = $"p/v/HSplit/PropertyEditPanel/dock_properties/Parameters"
+onready var layer_property_editors_container : Control = $"p/v/HSplit/PropertyEditPanel/dock_properties/Parameters/layer_properties"
 onready var uniform_editors_container : Control = $"p/v/HSplit/PropertyEditPanel/dock_properties/Parameters/uniforms/uniform_editors"
 
 ## The resources
@@ -267,6 +268,23 @@ func load_project(path : String):
 			layer_view.set_texture(texture)
 			keys.erase("texture")
 		
+		if "texture_stretch" in keys:
+			var texture_stretch_entry = file.get_value(layer, "texture_stretch")
+			var texture_stretch = 2
+			
+			if texture_stretch_entry == "[DEFAULT]":
+				texture_stretch = TextureRect.STRETCH_SCALE
+			else:
+				texture_stretch = [
+					"STRETCH_SCALE_ON_EXPAND",
+					"STRETCH_SCALE",
+					"STRETCH_TILE",
+					"STRETCH_KEEP"
+				].find(texture_stretch_entry)
+			
+			layer_view.TEXTURE_STRETCH = texture_stretch
+			keys.erase("texture_stretch")
+		
 		for uniform_name in keys:
 			var uniform_value = file.get_value(layer, uniform_name, null)
 			
@@ -311,6 +329,20 @@ func export_project(path : String):
 				section_name,
 				"texture",
 				texture_path
+			)
+
+			var texture_stretch = [
+				"STRETCH_SCALE_ON_EXPAND",
+				"STRETCH_SCALE",
+				"STRETCH_TILE",
+				"STRETCH_KEEP"
+			][layer.TEXTURE_STRETCH]
+			print(texture_stretch)
+
+			file.set_value(
+				section_name,
+				"texture_stretch",
+				texture_stretch
 			)
 		else:
 			OS.alert("Layer %s has no texture. Saving anyways." % [
@@ -408,9 +440,11 @@ func regenerate_uniform_editors():
 	var layer_view = layers_container.get_child(selected_layer)
 	
 	var TEXTURE_editor : PropertyPicker = property_editor_scene.instance()
-	TEXTURE_editor.setup(layer_view, "TEXTURE", "sampler2D")
+	TEXTURE_editor.d_core = self
 	TEXTURE_editor.sampler_file_dialog = sampler_file_dialog
-	uniform_editors_container.add_child(TEXTURE_editor, true)
+	TEXTURE_editor.setup(layer_view, "TEXTURE", "sampler2D")
+	TEXTURE_editor.set_value_no_signal(layer_view.texture, true)
+	layer_property_editors_container.add_child(TEXTURE_editor, true)
 	
 	for i in layer_view.uniform_list.values():
 		var uniform_editor : UniformEditor = uniform_editor_scene.instance()

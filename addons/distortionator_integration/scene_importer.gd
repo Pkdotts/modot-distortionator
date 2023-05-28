@@ -92,7 +92,7 @@ func _import_scene(path : String, flags : int, bake_fps : int):
 				"STRETCH_KEEP"
 			]
 			keys.erase("texture_stretch")
-			var texture_stretch : String = file.get_value(layer_section,"texture","STRETCH_SCALE")
+			var texture_stretch : String = file.get_value(layer_section,"texture_stretch","STRETCH_SCALE")
 			layer_node.stretch_mode = stretch_modes.find(texture_stretch)
 		
 		# Set the values for the uniforms!
