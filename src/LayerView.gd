@@ -1,7 +1,7 @@
 extends TextureRect
 class_name Distortionator_LayerView
 
-var TEXTURE = null
+var TEXTURE = null setget set_texture
 var SHADER = null
 var uniform_list := {}
 

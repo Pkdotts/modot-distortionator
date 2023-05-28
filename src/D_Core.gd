@@ -28,6 +28,7 @@ const pause_icon = preload("res://assets/icons/Pause.png")
 const layer_view_scene = preload("res://scenes/LayerView.tscn")
 const shader_editor_scene = preload("res://scenes/ShaderEditor.tscn")
 const uniform_editor_scene = preload("res://scenes/UniformEditor.tscn")
+const property_editor_scene = preload("res://scenes/PropertyPicker.tscn")
 
 func _ready():
 	setup_ui()
@@ -373,6 +374,11 @@ func regenerate_uniform_editors():
 	clear_uniform_editors()
 	
 	var layer_view = layers_container.get_child(selected_layer)
+	
+	var TEXTURE_editor : PropertyPicker = property_editor_scene.instance()
+	TEXTURE_editor.setup(layer_view, "TEXTURE", "sampler2D")
+	TEXTURE_editor.sampler_file_dialog = sampler_file_dialog
+	uniform_editors_container.add_child(TEXTURE_editor, true)
 	
 	for i in layer_view.uniform_list.values():
 		var uniform_editor : UniformEditor = uniform_editor_scene.instance()
