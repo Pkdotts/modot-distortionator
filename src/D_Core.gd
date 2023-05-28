@@ -72,6 +72,9 @@ func _on_btn_project_open_pressed():
 	project_file_dialog.mode = FileDialog.MODE_OPEN_FILE
 	project_file_dialog.popup_centered(Vector2(500, 600))
 
+func _on_btn_project_close_pressed():
+	close_project()
+
 func _on_ProjectFileDialog_file_selected(path):
 	match project_file_dialog_mode:
 		"New Project":
@@ -426,8 +429,14 @@ func create_new_layer(use_defaults = true):
 	return layer_view
 
 func delete_layer(index : int):
-	layers_container.get_child(0).free()
+	layers_container.get_child(index).free()
 	layers_list.remove_item(index)
+	if layers_list.get_item_count() > 0:
+		var new_index = min(index, layers_list.get_item_count() - 1)
+		layers_list.select(new_index)
+		select_layer(new_index)
+	else:
+		clear_uniform_editors()
 
 func move_layer(index : int, to : int):
 	layers_list.move_item(index, to)
@@ -463,6 +472,9 @@ func regenerate_uniform_editors():
 	parameter_dock.name = layers_container.get_child(selected_layer).name
 
 func clear_uniform_editors():
+	for i in layer_property_editors_container.get_children():
+		layer_property_editors_container.remove_child(i)
+		i.free()
 	for i in uniform_editors_container.get_children():
 		uniform_editors_container.remove_child(i)
 		i.free()

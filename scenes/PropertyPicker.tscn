@@ -154,10 +154,12 @@ margin_bottom = 810.0
 size_flags_horizontal = 3
 
 [node name="preview" type="TextureRect" parent="sampler2D"]
-margin_right = 1244.0
-margin_bottom = 810.0
+margin_right = 64.0
+margin_bottom = 48.0
+rect_min_size = Vector2( 64, 48 )
 size_flags_horizontal = 3
 texture = ExtResource( 2 )
+expand = true
 stretch_mode = 6
 
 [node name="v" type="VBoxContainer" parent="sampler2D"]

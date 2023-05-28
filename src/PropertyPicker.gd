@@ -51,7 +51,6 @@ func set_editor_value(value):
 				editor.get_node("preview").texture = value.file
 			else:
 				editor.get_node("preview").texture = value
-			print(value)
 
 func set_value_no_signal(new_value, update_editor):
 	target_object.set(target_property, new_value)

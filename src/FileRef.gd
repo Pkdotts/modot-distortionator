@@ -22,6 +22,4 @@ func get_rel_path():
 	if not project_path.is_subsequence_of(abs_path):
 		return null
 	var rel_path = abs_path.replace(project_path, "").simplify_path()
-	
-	print(rel_path)
 	return rel_path
