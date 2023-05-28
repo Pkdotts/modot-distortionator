@@ -95,6 +95,8 @@ func get_default_value(type : String):
 func _on_file_picked(path):
 	if not sampler_file_dialog.get_meta("emitter") == self:
 		return
+	if path.get_extension() == "":
+		return
 	if not d_core.is_inside_godot_project(path):
 		OS.alert("Resource must be inside the same godot project.")
 		return

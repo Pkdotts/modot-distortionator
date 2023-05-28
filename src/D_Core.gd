@@ -142,9 +142,14 @@ func get_godot_project_path(path : String):
 	dir.open(dir_path)
 	
 	while true:
+		print('Looking for project.godot in ', dir.get_current_dir())
 		if dir.file_exists("project.godot"):
 			return dir.get_current_dir()
+		var old_dir = dir.get_current_dir()
 		var err = dir.change_dir("../")
+		var new_dir = dir.get_current_dir()
+		if old_dir == new_dir:
+			break
 		if not err == OK:
 			break
 	return null
@@ -180,6 +185,7 @@ func new_project(path : String):
 	texture_folder = "res://"
 	save_path = path
 	unsaved = false
+	sampler_file_dialog.current_dir = godot_project_path
 	
 	export_project(path)
 
@@ -207,7 +213,7 @@ func load_project(path : String):
 		return
 	
 	var godot_project_path = get_godot_project_path(path)
-	sampler_file_dialog.current_path = godot_project_path
+	sampler_file_dialog.current_dir = godot_project_path
 	
 	if godot_project_path == null:
 		OS.alert("File must be inside of a Godot project.", "Couldn't find project.godot")
@@ -500,6 +506,7 @@ func load_fileref(file_path : String):
 	
 	if file:
 		return FileRef.create(project_path, file, file_path)
+	
 	return null
 
 func load_png(file_path : String):
