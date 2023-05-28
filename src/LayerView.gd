@@ -25,7 +25,7 @@ func set_uniform(uniform_name : String, value):
 		OS.alert("Unknown uniform '%s' for layer '%s'." % [uniform_name, name])
 		return
 	
-	material.set_shader_param(uniform_name, value)
+	material.set_shader_param(uniform_name, value.file if value is FileRef else value)
 	uniform_list[uniform_name].value = value
 
 func get_uniform(uniform_name : String, value):
