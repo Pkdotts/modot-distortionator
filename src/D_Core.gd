@@ -515,7 +515,9 @@ func load_png(file_path : String):
 		var img := Image.new()
 		img.load_png_from_buffer(f.get_buffer(f.get_len()))
 		var img_tex := ImageTexture.new()
+		img.clear_mipmaps()
 		img_tex.create_from_image(img, 1)
+		img_tex.flags = 2
 		
 		return img_tex
 	return null
